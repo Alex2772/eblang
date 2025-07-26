@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eblang/token/any_token.h"
+#include "eblang/token.h"
 #include <string_view>
 #include <vector>
 

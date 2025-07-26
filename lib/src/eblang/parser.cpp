@@ -22,13 +22,45 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
           [](token::Integer token) -> std::unique_ptr<expression::Base> {
               return std::make_unique<expression::Constant>(token.value);
           },
+          [](token::String token) -> std::unique_ptr<expression::Base> {
+              return std::make_unique<expression::Constant>(std::move(token.value));
+          },
           [&](token::LPar token) -> std::unique_ptr<expression::Base> {
               auto lhs = parseExpression(0);
               auto n = take();
               if (!std::holds_alternative<token::RPar>(n)) {
-                  throw std::runtime_error("Expected ')'");
+                  throw std::runtime_error(fmt::format("Expected ')' to close '(', got {}", typeid(n).name()));
               }
               return lhs;
+          },
+          [&](token::Identifier identifier) -> std::unique_ptr<expression::Base> {
+              // 1. variable reference
+              // 2. function call
+              if (std::holds_alternative<token::LPar>(peek())) {
+                  take();
+                  std::vector<std::unique_ptr<expression::Base>> args;
+                  for (;;) {
+                      auto n = peek();
+                      if (std::holds_alternative<token::RPar>(n)) {
+                          take();
+                          if (!args.empty()) {
+                              throw std::runtime_error("Unexpected ')' after ','");
+                          }
+                          break;
+                      }
+                      args.push_back(parseExpression());
+                      if (std::holds_alternative<token::Comma>(peek())) {
+                          take();
+                          continue;
+                      }
+                      if (std::holds_alternative<token::RPar>(peek())) {
+                          break;
+                      }
+                      throw std::runtime_error(fmt::format("Expected ',' or ')' to close argument list, got {}", typeid(n).name()));
+                  }
+                  return std::make_unique<expression::FunctionCall>(std::move(identifier.value), std::move(args));
+              }
+              return std::make_unique<expression::VariableReference>(std::move(identifier.value));
           },
           [](auto&& token) -> std::unique_ptr<expression::Base> {
               throw std::runtime_error(fmt::format("Unexpected token: {}", typeid(token).name()));
@@ -43,6 +75,9 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
             break;
         }
         if (std::holds_alternative<token::Semicolon>(peek())) {
+            break;
+        }
+        if (std::holds_alternative<token::Comma>(peek())) {
             break;
         }
         int rightBindingPower = std::visit(

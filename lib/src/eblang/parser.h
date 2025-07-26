@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "eblang/token/any_token.h"
+#include "eblang/token.h"
 #include "expression.h"
 #include <memory>
 #include <span>

@@ -101,6 +101,18 @@ std::vector<token::Any> eblang::lexer::process(std::string_view code) {
             case '/':
                 result.push_back(Slash{});
                 break;
+            case ',':
+                result.push_back(Comma{});
+                break;
+
+            case '"':
+                auto end = std::ranges::find(std::ranges::subrange(std::next(remainingString.begin()), remainingString.end()), '"');
+                if (end == remainingString.end()) {
+                    throw std::runtime_error(fmt::format("string literal is not finished, at line {}", line));
+                }
+                result.push_back(String{.value = std::string(std::next(it), end)});
+                it = end;
+                break;
         }
         if (it == code.end()) {
             break;

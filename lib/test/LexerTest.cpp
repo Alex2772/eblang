@@ -1,5 +1,5 @@
 #include "eblang/lexer.h"
-#include "eblang/token/any_token.h"
+#include "eblang/token.h"
 #include <gtest/gtest.h>
 
 using namespace eblang::token;
@@ -22,6 +22,17 @@ fn main() {
         Integer { .value = 322 },
         Semicolon{},
         RCurlyBracket{},
+    };
+
+    EXPECT_EQ(processed, expected);
+}
+
+TEST(Lexer, Case2) {
+    auto processed = eblang::lexer::process(R"(
+"hello"
+)");
+    std::vector<Any> expected{
+        String { .value = "hello" },
     };
 
     EXPECT_EQ(processed, expected);

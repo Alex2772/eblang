@@ -2,5 +2,5 @@
 #include <string>
 
 namespace eblang {
-    using Value = std::variant<int, std::string>;
+    using Value = std::variant<std::monostate /* aka void */, int, std::string>;
 }
