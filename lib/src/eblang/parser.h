@@ -33,6 +33,7 @@ namespace eblang {
             return token;
         }
         std::unique_ptr<eblang::expression::If> parseIfStatement();
+        std::unique_ptr<eblang::expression::Return> parseReturnStatement();
 
         /**
          * @brief Like parseCommandSequence but also consumes '{' and '}'.

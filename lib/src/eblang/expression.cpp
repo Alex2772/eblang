@@ -24,6 +24,9 @@ eblang::Value eblang::expression::FunctionCall::evaluate(Context& context) {
 
 void eblang::expression::execute(const eblang::expression::CommandSequence& commands, eblang::Context& context) {
     for (const auto& command : commands) {
+        if (context.returnValue.has_value()) {
+            return;
+        }
         command->evaluate(context);
     }
 }

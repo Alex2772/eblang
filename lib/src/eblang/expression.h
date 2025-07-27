@@ -6,6 +6,7 @@
 #include <functional>
 #include "context.h"
 #include "fmt/format.h"
+#include "util.h"
 
 namespace eblang::expression {
 
@@ -37,7 +38,16 @@ struct Binary : Base {
     std::unique_ptr<expression::Base> rhs;
 
     Value evaluate(Context& context) override {
-        return Op {}(std::get<int>(lhs->evaluate(context)), std::get<int>(rhs->evaluate(context)));
+        return std::visit(
+            eblang::match {
+              [](auto&& lhs, auto&& rhs) -> Value {
+                  if constexpr (requires { Op{}(lhs, rhs); }) {
+                      return Op{}(lhs, rhs);
+                  }
+                  throw std::runtime_error(fmt::format("Can't perform {} on {} and {}", typeid(Op).name(), typeid(lhs).name(), typeid(rhs).name()));
+              },
+            },
+            lhs->evaluate(context), rhs->evaluate(context));
     }
 };
 
@@ -48,9 +58,7 @@ struct VariableAssignment : Base {
     std::string name;
     std::unique_ptr<expression::Base> value;
 
-    Value evaluate(Context& context) override {
-        return context.variables[name] = value->evaluate(context);
-    }
+    Value evaluate(Context& context) override { return context.variables[name] = value->evaluate(context); }
 };
 
 struct FunctionCall : Base {
@@ -76,7 +84,7 @@ struct VariableReference : Base {
     }
 };
 
-struct If: Base {
+struct If : Base {
     If(std::unique_ptr<expression::Base> condition, CommandSequence body)
       : condition(std::move(condition)), body(std::move(body)) {}
     ~If() override = default;
@@ -88,7 +96,20 @@ struct If: Base {
         if (std::get<int>(condition->evaluate(context)) != 0) {
             expression::execute(body, context);
         }
-        return std::monostate{};
+        return std::monostate {};
     }
 };
+
+struct Return : Base {
+    explicit Return(std::unique_ptr<expression::Base> expression) : expression(std::move(expression)) {}
+    ~Return() override = default;
+
+    std::unique_ptr<expression::Base> expression;
+
+    Value evaluate(Context& context) override {
+        context.returnValue = expression != nullptr ? expression->evaluate(context) : std::monostate {};
+        return std::monostate {};
+    }
+};
+
 }   // namespace eblang::expression

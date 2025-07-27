@@ -14,3 +14,5 @@ if (op == "-") {
   println(a, " - ", b, " = ", a - b);
   return;
 }
+
+println("error: unknown operator ", op);

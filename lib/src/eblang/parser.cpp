@@ -135,11 +135,16 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
 
 eblang::expression::CommandSequence eblang::Parser::parseCommandSequence() {
     std::vector<std::unique_ptr<expression::Base>> expressions;
+    naxyi:
     while (!mTokens.empty()) {
         if (auto keyword = std::get_if<token::Keyword>(&peek())) {
-            if (*keyword == token::Keyword::IF) {
-                expressions.push_back(parseIfStatement());
-                break;
+            switch (*keyword) {
+                case token::Keyword::IF:
+                    expressions.push_back(parseIfStatement());
+                    goto naxyi;
+                case token::Keyword::RETURN:
+                    expressions.push_back(parseReturnStatement());
+                    goto naxyi;
             }
         }
         if (std::holds_alternative<token::RCurlyBracket>(peek())) {
@@ -180,4 +185,16 @@ eblang::expression::CommandSequence eblang::Parser::parseCommandBlock() {
         throw std::runtime_error("Expected '}' that closes the command block");
     }
     return result;
+}
+
+std::unique_ptr<eblang::expression::Return> eblang::Parser::parseReturnStatement() {
+    assert(std::get<token::Keyword>(peek()) == token::Keyword::RETURN);
+    take();
+    if (std::holds_alternative<token::Semicolon>(peek())) {
+        // return;
+        return std::make_unique<expression::Return>(nullptr);
+    }
+
+    // return 228;
+    return std::make_unique<expression::Return>(parseExpression());
 }

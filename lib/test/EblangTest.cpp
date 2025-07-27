@@ -161,3 +161,35 @@ if (a == 1) {
     g.run(code);
     EXPECT_FALSE(called);
 }
+
+TEST(Eblang, Return) {
+    eblang::State g;
+    g.context().functions["reallybad"] = {
+        .value = [&](eblang::Context& context, std::vector<eblang::Value> args) -> eblang::Value {
+            throw std::runtime_error("should not be called");
+        },
+    };
+    g.run(R"(
+a = 123;
+return;
+reallybad();
+)");
+    EXPECT_EQ(std::get<int>(g.context().variables["a"]), 123);
+}
+
+TEST(Eblang, IntEqual) {
+    eblang::State g;
+    EXPECT_EQ(std::get<int>(g.evaluate("1 == 1")), true);
+    EXPECT_EQ(std::get<int>(g.evaluate("0 == 1")), false);
+}
+
+TEST(Eblang, StringEqual) {
+    eblang::State g;
+    EXPECT_EQ(std::get<int>(g.evaluate("\"a\" == \"a\"")), true);
+    EXPECT_EQ(std::get<int>(g.evaluate("\"a\" == \"b\"")), false);
+}
+
+TEST(Eblang, StringConcat) {
+    eblang::State g;
+    EXPECT_EQ(std::get<std::string>(g.evaluate("\"a\" + \"b\"")), "ab");
+}
