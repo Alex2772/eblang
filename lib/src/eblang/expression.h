@@ -44,23 +44,7 @@ struct FunctionCall : Base {
     std::string name;
     std::vector<std::unique_ptr<expression::Base>> args;
 
-    Value evaluate(Context& context) override {
-        auto it = context.functions.find(name);
-        if (it == context.functions.end()) {
-            throw std::runtime_error(fmt::format("Function not found: {}", name));
-        }
-        if (it->second.args.size() != args.size()) {
-            throw std::runtime_error(fmt::format(
-                "Function {} expects {} arguments, but {} were provided", name, it->second.args.size(), args.size()));
-        }
-        auto prevVariables = std::move(context.variables);
-        for (std::size_t i = 0; i < args.size(); ++i) {
-            context.variables[it->second.args[i].name] = args[i]->evaluate(context);
-        }
-        auto result = it->second.value(context);
-        context.variables = std::move(prevVariables);
-        return result;
-    }
+    Value evaluate(Context& context) override;
 };
 
 struct VariableReference : Base {

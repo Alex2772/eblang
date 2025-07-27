@@ -8,12 +8,6 @@ namespace eblang {
 struct Context;
 
 struct Function {
-    std::function<Value(Context&)> value;
-
-    struct Argument {
-        std::string name;
-    };
-
-    std::vector<Argument> args;
+    std::function<Value(Context& context, std::vector<Value> args)> value;
 };
 }
