@@ -7,6 +7,7 @@
 #include "fmt/format.h"
 #include "util.h"
 #include <stdexcept>
+#include <cassert>
 
 std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int leftBindingPower) {
     // pratt parsing
@@ -50,7 +51,8 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
                           take();
                           break;
                       }
-                      throw std::runtime_error(fmt::format("Expected ',' or ')' to close argument list, got {}", typeid(n).name()));
+                      throw std::runtime_error(
+                          fmt::format("Expected ',' or ')' to close argument list, got {}", typeid(n).name()));
                   }
                   return std::make_unique<expression::FunctionCall>(std::move(identifier.value), std::move(args));
               }
@@ -87,10 +89,11 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
 
         int rightBindingPower = std::visit(
             match {
-              [](token::Plus token) { return 0; },
-              [](token::Minus token) { return 0; },
-              [](token::Asterisk token) { return 10; },
-              [](token::Slash token) { return 10; },
+              [](token::Equal2 token) { return 0; },
+              [](token::Plus token) { return 10; },
+              [](token::Minus token) { return 10; },
+              [](token::Asterisk token) { return 20; },
+              [](token::Slash token) { return 20; },
               [](auto&& token) -> int {
                   throw std::runtime_error(fmt::format("Unexpected token: {}", typeid(token).name()));
               },
@@ -106,6 +109,9 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
 
         lhs = std::visit(
             match {
+              [&](token::Equal2 token) -> std::unique_ptr<expression::Base> {
+                  return std::make_unique<expression::Binary<std::equal_to<>>>(std::move(lhs), std::move(rhs));
+              },
               [&](token::Plus token) -> std::unique_ptr<expression::Base> {
                   return std::make_unique<expression::Binary<std::plus<>>>(std::move(lhs), std::move(rhs));
               },
@@ -127,9 +133,15 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
     return lhs;
 }
 
-std::vector<std::unique_ptr<eblang::expression::Base>> eblang::Parser::parseCommandSequence() {
+eblang::expression::CommandSequence eblang::Parser::parseCommandSequence() {
     std::vector<std::unique_ptr<expression::Base>> expressions;
     while (!mTokens.empty()) {
+        if (auto keyword = std::get_if<token::Keyword>(&peek())) {
+            if (*keyword == token::Keyword::IF) {
+                expressions.push_back(parseIfStatement());
+                break;
+            }
+        }
         if (std::holds_alternative<token::RCurlyBracket>(peek())) {
             break;
         }
@@ -140,4 +152,32 @@ std::vector<std::unique_ptr<eblang::expression::Base>> eblang::Parser::parseComm
         expressions.push_back(parseExpression());
     }
     return expressions;
+}
+
+std::unique_ptr<eblang::expression::If> eblang::Parser::parseIfStatement() {
+    assert(std::get<token::Keyword>(peek()) == token::Keyword::IF);
+    take();
+    if (!std::holds_alternative<token::LPar>(take())) {
+        throw std::runtime_error("Expected '(' after 'if'");
+    }
+    auto condition = parseExpression();
+    if (!std::holds_alternative<token::RPar>(take())) {
+        throw std::runtime_error("Expected ')' after condition");
+    }
+    if (!std::holds_alternative<token::LCurlyBracket>(peek())) {
+        throw std::runtime_error("Expected '{' after ')'");
+    }
+    auto body = parseCommandBlock();
+    return std::make_unique<eblang::expression::If>(std::move(condition), std::move(body));
+}
+
+eblang::expression::CommandSequence eblang::Parser::parseCommandBlock() {
+    auto f1 = take();
+    assert(std::holds_alternative<token::LCurlyBracket>(f1));
+    auto result = parseCommandSequence();
+    auto f2 = take();
+    if (!std::holds_alternative<token::RCurlyBracket>(f2)) {
+        throw std::runtime_error("Expected '}' that closes the command block");
+    }
+    return result;
 }

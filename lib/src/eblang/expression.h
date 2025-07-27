@@ -15,6 +15,10 @@ struct Base {
     virtual Value evaluate(Context& context) = 0;
 };
 
+using CommandSequence = std::vector<std::unique_ptr<eblang::expression::Base>>;
+
+void execute(const CommandSequence& commands, Context& context);
+
 struct Constant : Base {
     explicit Constant(Value value) : value(std::move(value)) {}
     ~Constant() override = default;
@@ -69,6 +73,22 @@ struct VariableReference : Base {
             throw std::runtime_error("Variable not found: " + name);
         }
         return it->second;
+    }
+};
+
+struct If: Base {
+    If(std::unique_ptr<expression::Base> condition, CommandSequence body)
+      : condition(std::move(condition)), body(std::move(body)) {}
+    ~If() override = default;
+
+    std::unique_ptr<expression::Base> condition;
+    CommandSequence body;
+
+    Value evaluate(Context& context) override {
+        if (std::get<int>(condition->evaluate(context)) != 0) {
+            expression::execute(body, context);
+        }
+        return std::monostate{};
     }
 };
 }   // namespace eblang::expression

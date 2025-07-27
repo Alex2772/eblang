@@ -32,6 +32,12 @@ namespace eblang {
             mTokens = mTokens.subspan(1);
             return token;
         }
+        std::unique_ptr<eblang::expression::If> parseIfStatement();
+
+        /**
+         * @brief Like parseCommandSequence but also consumes '{' and '}'.
+         */
+        expression::CommandSequence parseCommandBlock();
     };
 
 }

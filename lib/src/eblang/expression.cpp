@@ -21,3 +21,9 @@ eblang::Value eblang::expression::FunctionCall::evaluate(Context& context) {
 //        context.variables = std::move(prevVariables);
     return result;
 }
+
+void eblang::expression::execute(const eblang::expression::CommandSequence& commands, eblang::Context& context) {
+    for (const auto& command : commands) {
+        command->evaluate(context);
+    }
+}

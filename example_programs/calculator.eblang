@@ -1,0 +1,16 @@
+println("a:");
+a = toint(input());
+println("b:");
+b = toint(input());
+println("operator (+ or -):");
+op = input();
+
+if (op == "+") {
+  println(a, " + ", b, " = ", a + b);
+  return;
+}
+
+if (op == "-") {
+  println(a, " - ", b, " = ", a - b);
+  return;
+}

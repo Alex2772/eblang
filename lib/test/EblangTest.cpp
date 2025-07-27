@@ -135,3 +135,29 @@ b = 456;
     EXPECT_EQ(std::get<int>(g.context().variables["a"]), 123);
     EXPECT_EQ(std::get<int>(g.context().variables["b"]), 456);
 }
+
+TEST(Eblang, IfCondition) {
+    std::string code = R"(
+if (a == 1) {
+  positive();
+}
+)";
+    eblang::State g;
+    bool called = false;
+    g.context().functions["positive"] = {
+        .value = [&](eblang::Context& context, std::vector<eblang::Value> args) -> eblang::Value {
+            EXPECT_EQ(args.size(), 0);
+            called = true;
+            return std::monostate {};
+        },
+    };
+    g.context().variables["a"] = 1;
+    g.run(code);
+    EXPECT_TRUE(called);
+
+    called = false;
+
+    g.context().variables["a"] = 2;
+    g.run(code);
+    EXPECT_FALSE(called);
+}

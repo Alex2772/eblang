@@ -41,6 +41,7 @@ std::vector<token::Any> eblang::lexer::process(std::string_view code) {
                     static std::map<std::string_view, Keyword> keywords = {
                             {"return", Keyword::RETURN},
                             {"fn", Keyword::FN},
+                            {"if", Keyword::IF},
                     };
 
                     if (auto keyword = keywords.find(valueString); keyword != keywords.end()) {
@@ -106,6 +107,13 @@ std::vector<token::Any> eblang::lexer::process(std::string_view code) {
                 break;
 
             case '=':
+                if (std::next(it) != code.end()) {
+                    if (*std::next(it) == '=') {
+                        it++;
+                        result.push_back(Equal2{});
+                        break;
+                    }
+                }
                 result.push_back(Equal{});
                 break;
 

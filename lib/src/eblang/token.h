@@ -7,6 +7,7 @@ namespace eblang::token {
 enum class Keyword {
     FN,
     RETURN,
+    IF,
 };
 
 struct LPar {
@@ -42,6 +43,9 @@ struct Comma {
 struct Equal {
     auto operator<=>(const Equal&) const = default;
 };   // =
+struct Equal2 {
+    auto operator<=>(const Equal2&) const = default;
+};   // ==
 struct Identifier {
     auto operator<=>(const Identifier&) const = default;
     std::string value;
@@ -56,6 +60,6 @@ struct Integer {
 };
 
 using Any = std::variant<
-    Keyword, LPar, RPar, Equal, LCurlyBracket, RCurlyBracket, Semicolon, Comma, Plus, Minus, Asterisk, Slash, Identifier,
+    Keyword, LPar, RPar, Equal, Equal2, LCurlyBracket, RCurlyBracket, Semicolon, Comma, Plus, Minus, Asterisk, Slash, Identifier,
     Integer, String>;
 }   // namespace eblang::token
