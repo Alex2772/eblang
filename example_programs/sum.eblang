@@ -1,3 +1,5 @@
-a = 1;
-b = 2;
+println("a:");
+a = toint(input());
+println("b:");
+b = toint(input());
 println(a, " + ", b, " = ", a + b);
