@@ -20,4 +20,7 @@ FetchContent_MakeAvailable(fmt)
 
 add_subdirectory(lib)
 
-add_executable(eblang main.cpp)
+file(GLOB_RECURSE SRCS src/*.cpp)
+add_executable(${PROJECT_NAME} ${SRCS})
+target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_link_libraries(${PROJECT_NAME} PUBLIC eblang_lib)

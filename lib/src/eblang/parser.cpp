@@ -5,15 +5,8 @@
 #include "parser.h"
 #include "expression.h"
 #include "fmt/format.h"
+#include "util.h"
 #include <stdexcept>
-
-template <typename... Lambdas>
-struct match : Lambdas... {
-    using Lambdas::operator()...;
-};
-
-template <typename... Lambdas>
-match(Lambdas...) -> match<Lambdas...>;
 
 std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int leftBindingPower) {
     // pratt parsing
