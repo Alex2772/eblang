@@ -37,6 +37,18 @@ struct Binary : Base {
     }
 };
 
+struct VariableAssignment : Base {
+    VariableAssignment(std::string name, std::unique_ptr<expression::Base> value)
+      : name(std::move(name)), value(std::move(value)) {}
+    ~VariableAssignment() override = default;
+    std::string name;
+    std::unique_ptr<expression::Base> value;
+
+    Value evaluate(Context& context) override {
+        return context.variables[name] = value->evaluate(context);
+    }
+};
+
 struct FunctionCall : Base {
     FunctionCall(std::string name, std::vector<std::unique_ptr<expression::Base>> args)
       : name(std::move(name)), args(std::move(args)) {}

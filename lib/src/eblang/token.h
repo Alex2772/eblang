@@ -39,6 +39,9 @@ struct Slash {
 struct Comma {
     auto operator<=>(const Comma&) const = default;
 };   // ,
+struct Equal {
+    auto operator<=>(const Equal&) const = default;
+};   // =
 struct Identifier {
     auto operator<=>(const Identifier&) const = default;
     std::string value;
@@ -53,6 +56,6 @@ struct Integer {
 };
 
 using Any = std::variant<
-    Keyword, LPar, RPar, LCurlyBracket, RCurlyBracket, Semicolon, Comma, Plus, Minus, Asterisk, Slash, Identifier,
+    Keyword, LPar, RPar, Equal, LCurlyBracket, RCurlyBracket, Semicolon, Comma, Plus, Minus, Asterisk, Slash, Identifier,
     Integer, String>;
 }   // namespace eblang::token

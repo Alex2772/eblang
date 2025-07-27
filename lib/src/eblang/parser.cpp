@@ -47,6 +47,7 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
                           continue;
                       }
                       if (std::holds_alternative<token::RPar>(peek())) {
+                          take();
                           break;
                       }
                       throw std::runtime_error(fmt::format("Expected ',' or ')' to close argument list, got {}", typeid(n).name()));
@@ -73,6 +74,17 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
         if (std::holds_alternative<token::Comma>(peek())) {
             break;
         }
+        if (std::holds_alternative<token::Equal>(peek())) {
+            take();
+            auto rhs = parseExpression(0);
+            auto variableReference = dynamic_cast<expression::VariableReference*>(lhs.get());
+            if (!variableReference) {
+                throw std::runtime_error("Expected variable reference on left side of assignment");
+            }
+            lhs = std::make_unique<expression::VariableAssignment>(std::move(variableReference->name), std::move(rhs));
+            break;
+        }
+
         int rightBindingPower = std::visit(
             match {
               [](token::Plus token) { return 0; },
@@ -113,4 +125,19 @@ std::unique_ptr<eblang::expression::Base> eblang::Parser::parseExpression(int le
             opToken);
     }
     return lhs;
+}
+
+std::vector<std::unique_ptr<eblang::expression::Base>> eblang::Parser::parseCommandSequence() {
+    std::vector<std::unique_ptr<expression::Base>> expressions;
+    while (!mTokens.empty()) {
+        if (std::holds_alternative<token::RCurlyBracket>(peek())) {
+            break;
+        }
+        if (std::holds_alternative<token::Semicolon>(peek())) {
+            take();
+            continue;
+        }
+        expressions.push_back(parseExpression());
+    }
+    return expressions;
 }

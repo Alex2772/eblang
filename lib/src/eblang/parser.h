@@ -16,6 +16,8 @@ namespace eblang {
             return parseExpression(0);
         }
 
+        std::vector<std::unique_ptr<expression::Base>> parseCommandSequence();
+
     private:
         std::span<eblang::token::Any> mTokens;
 

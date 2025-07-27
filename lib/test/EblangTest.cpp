@@ -119,3 +119,19 @@ TEST(Eblang, FunctionCall5) {
     EXPECT_TRUE(std::holds_alternative<std::monostate>(g.evaluate("println(228, \"322\")")));
     EXPECT_EQ(call, 2);
 }
+
+TEST(Eblang, VariableAssignment) {
+    eblang::State g;
+    g.evaluate("a = 123");
+    EXPECT_EQ(std::get<int>(g.context().variables["a"]), 123);
+}
+
+TEST(Eblang, RunProgram) {
+    eblang::State g;
+    g.run(R"(
+a = 123;
+b = 456;
+)");
+    EXPECT_EQ(std::get<int>(g.context().variables["a"]), 123);
+    EXPECT_EQ(std::get<int>(g.context().variables["b"]), 456);
+}

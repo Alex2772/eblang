@@ -105,6 +105,10 @@ std::vector<token::Any> eblang::lexer::process(std::string_view code) {
                 result.push_back(Comma{});
                 break;
 
+            case '=':
+                result.push_back(Equal{});
+                break;
+
             case '"':
                 auto end = std::ranges::find(std::ranges::subrange(std::next(remainingString.begin()), remainingString.end()), '"');
                 if (end == remainingString.end()) {

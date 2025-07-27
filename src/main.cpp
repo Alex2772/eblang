@@ -23,7 +23,6 @@ file: path to program file.
 
     eblang::State state;
     eblang::stdlib::init(state);
-    eblang::Value result = state.evaluate(code);
-    std::cout << std::endl << " --> " << result << std::endl;
+    state.run(code);
     return 0;
 }
