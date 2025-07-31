@@ -7,6 +7,9 @@ Video: https://youtu.be/Zk676WxebzE
 Expressively Bare Language (eblang) is a minimalist programming language designed with simplicity and expressiveness in
 mind. It aims to provide a clean and straightforward syntax.
 
+This programming language is not intended for real world applications; instead, it is a demonstration of implementing
+your own language.
+
 ## Project Structure
 
 - `src/` - Source code of the eblang compiler/interpreter
