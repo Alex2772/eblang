@@ -27,7 +27,7 @@ mind. It aims to provide a clean and straightforward syntax.
 mkdir build
 cd build
 cmake ..
-cmake --build
+cmake --build .
 ```
 
 # Usage
