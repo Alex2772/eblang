@@ -1,7 +1,3 @@
-//
-// Created by alex2772 on 7/27/25.
-//
-
 #include <iostream>
 #include "stdlib.h"
 #include "util.h"
@@ -37,6 +33,22 @@ eblang::Value toint(eblang::Context& state, const std::vector<eblang::Value>& ar
         },
         args[0]);
 }
+
+eblang::Value runCommandVeriGayForeworCallBashScriptIHateRust(eblang::Context& state, const std::vector<eblang::Value>& args) {
+    if (args.size() != 1) {
+        throw std::runtime_error("no no no args mante");
+    }
+    return std::visit(
+        eblang::match {
+          [](const std::string& s) -> int {
+              return std::system(s.c_str());
+          },
+          [](std::monostate) -> int { throw std::runtime_error("you neformal"); },
+          [](auto&&) -> int { throw std::runtime_error("you pogani neformal"); }
+        },
+        args[0]);
+
+}
 }   // namespace
 
 void eblang::stdlib::init(eblang::State& state) {
@@ -45,4 +57,5 @@ void eblang::stdlib::init(eblang::State& state) {
     DEFINE(println);
     DEFINE(input);
     DEFINE(toint);
+    DEFINE(runCommandVeriGayForeworCallBashScriptIHateRust);
 }
